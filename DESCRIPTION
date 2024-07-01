@@ -1,11 +1,20 @@
 Package: susieash
 Type: Package
-Title: What the Package Does (Title Case)
+Title: SuSiE-ASH
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
+Author: Alex McCreight
+Maintainer: Alex McCreight <apm2217@cumc.columbia.edu>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
+Imports:
+    Rfast,
+    susieR,
+    mr.ash.alpha
+Remotes:
+    gaow/susieR,
+    stephenslab/mr.ash.alpha
+SystemRequirements: gcc, gfortran
+RoxygenNote: 7.3.2
