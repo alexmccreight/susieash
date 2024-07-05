@@ -343,12 +343,16 @@ susie_ash = function (X,y,L = min(10,ncol(X)),
   } else{
     # Run Mr. ASH on Residuals
     mrash_output = mr.ash.alpha::mr.ash(X = X, y = y_residuals, sa2 = nrow(X) * (2^((0:19)/20) - 1)^2, intercept = F)
+
+    # Store theta and ELBO
     theta = mrash_output$beta
-    elbo[i - warm_start + 1] = -(mrash_output$varobj)[length(mrash_output$varobj)]
+    elbo[i - warm_start] = -(mrash_output$varobj)[length(mrash_output$varobj)]
+
+    # Update residual vector
     y_residuals = y_residuals - X %*% theta
 
       #Convergence Criterion
-      if (i > warm_start + 1 && (elbo[i - warm_start + 1] - elbo[i - warm_start]) < tol) {
+      if (i > warm_start + 1 && (elbo[i - warm_start] - elbo[i - warm_start - 1]) < tol) {
         s$converged = TRUE
         break
       }
@@ -372,11 +376,7 @@ susie_ash = function (X,y,L = min(10,ncol(X)),
     }
   }
 
-
-
-
-
-  # Remove first (infinite) entry, and trailing NAs. Combine SuSiE and mr. ash ELBO.
+  # Remove first (infinite) entry, and trailing NAs. ADD: Combine SuSiE and MR. ASH ELBO
   elbo = elbo[!is.na(elbo)]
   s$elbo = elbo
   s$niter = i
@@ -408,7 +408,6 @@ susie_ash = function (X,y,L = min(10,ncol(X)),
                           min_abs_corr = min_abs_corr,
                           # median_abs_corr = median_abs_corr, ## muted
                           n_purity = n_purity)
-    #s$sets = susie_get_cs_attainable(s, coverage = 0.95, ethres = 20)
     s$pip = susieR::susie_get_pip(s,prune_by_cs = FALSE,prior_tol = prior_tol)
   }
 
