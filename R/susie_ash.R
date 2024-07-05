@@ -322,7 +322,6 @@ susie_ash = function (X,y,L = min(10,ncol(X)),
 
   # Initialize residuals
   y_residuals = y
-  #y_residuals_mrash = NA
 
   for (i in 1:max_iter) {
     # SuSiE "warm start" phase
@@ -332,15 +331,14 @@ susie_ash = function (X,y,L = min(10,ncol(X)),
     s = susieR:::update_each_effect(X,y_residuals,s,estimate_prior_variance,estimate_prior_method,
                            check_null_threshold)
     if (verbose)
-      print(paste0("objective:",susieR:::get_objective(X,y,s)))
+      print(paste0("objective:",susieR:::get_objective(X,y_residuals,s)))
 
-    # Check which credible sets have < 0.1% heritability
-    ls <- which(s$V < 0.001)
-    if (length(ls) > 0) {
-      notls <- setdiff(1:L, ls)
-      # Update y_residuals
-      #y_residuals <- y - X %*% colSums(s$alpha[notls,,drop=F] * s$mu[notls,,drop=F])
-      y_residuals <- y - X %*% colSums(s$alpha[notls,] * s$mu[notls,])
+    # Check which credible sets have >= 0.1% heritability
+    high_heritability_ls <- which(s$V >= 0.001)
+
+    if (length(high_heritability_ls) > 0) {
+      # Update y_residuals if there are high heritability credible sets. If none, y residuals remain unchanged.
+      y_residuals <- y - X %*% colSums(s$alpha[high_heritability_ls,] * s$mu[high_heritability_ls,])
     }
   } else{
     # Run Mr. ASH on Residuals
@@ -348,8 +346,6 @@ susie_ash = function (X,y,L = min(10,ncol(X)),
     theta = mrash_output$beta
     elbo[i - warm_start + 1] = -(mrash_output$varobj)[length(mrash_output$varobj)]
     y_residuals = y_residuals - X %*% theta
-    #y_residuals_mrash = y_residuals_mrash - mrash_output$data$X %*% theta
-
 
       #Convergence Criterion
       if (i > warm_start + 1 && (elbo[i - warm_start + 1] - elbo[i - warm_start]) < tol) {
